@@ -1,13 +1,15 @@
 # EcoRoute: Carbon Tax Optimization Dashboard
 
-EcoRoute is a smart tracking dashboard built for anyone tackling the daily Mississauga commute. I designed it to take the guesswork out of travel costs: it visualizes your route, calculates your carbon tax savings, and maps out a 5-year comparison between driving and taking transit. Plus, it features a built-in AI transit strategist to give you real-time, neighborhood-specific advice.
+EcoRoute is a smart tracking dashboard built for anyone tackling the daily Mississauga commute. I designed it to take the guesswork out of travel costs: it visualizes your route, estimates your carbon tax savings, and maps out a 5-year comparison between driving and taking transit. Plus, it features a built-in AI transit strategist to give you dynamic advice.
+
+---
 
 ## Features
 
 * **Interactive Geographic Mapping:** Tracks explicit high-density snapped road vectors between regional Mississauga transit hubs (UTM, Square One, Port Credit GO, Erin Mills Town Centre) using `folium`.
-* **Live "Optimization Wallet":** A 3-column real-time tracking display that calculates weekly/annual carbon tax saved, $CO_2$ avoided, and equivalent tree-days of environmental mitigation.
+* **Live "Optimization Wallet":** A 3-column interactive tracking display that estimates weekly/annual carbon tax saved, $CO_2$ avoided, and equivalent tree-days of environmental mitigation.
 * **5-Year Macroeconomic Cost Projections:** A compounding line chart visualizing variable regional fuel pricing configurations against fixed municipal transit fares over a five-year horizon.
-* **AI Commute Strategist:** Utilizes serverless open-source model inference (`deepseek-ai/DeepSeek-V3-0324` via Featherless.ai) to generate tailored, hyper-local spatial logistics and infrastructure advice.
+* **AI Commute Strategist:** Utilizes serverless open-source model inference (`deepseek-ai/DeepSeek-V3-0324` via Featherless.ai) to generate tailored, hyper-local spatial logistics and infrastructure advice using configurable vehicle emissions and fuel cost assumptions
 
 ---
 
@@ -50,6 +52,7 @@ Where:
 
 The dashboard also converts annual carbon savings into **Tree-Days**, representing the amount of carbon dioxide a mature tree would absorb in one day. This conversion assumes a mature tree sequesters approximately **22 kg of CO₂ per year**, providing a more intuitive way to visualize environmental impact.
 
+---
 
 ## Project Structure
 
@@ -61,3 +64,11 @@ The dashboard also converts annual carbon savings into **Tree-Days**, representi
 ├── requirements.txt        # Python dependency manifest
 └── runtime.txt             # Deployment runtime environment file
 ```
+
+---
+
+## References
+
+- Government of Canada — Federal Fuel Charge Rates
+- Natural Resources Canada — Vehicle Fuel Consumption Ratings
+- US EPA / FAO — Average Annual Tree Carbon Sequestration
