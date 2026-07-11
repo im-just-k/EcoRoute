@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#23d973"          # Neon Eco Green
+backgroundColor = "#0e1117"       # Sleek Dark Charcoal
+secondaryBackgroundColor = "#1f2937" # Sidebar Gray
+textColor = "#ffffff"             # Clean White Text
+font = "sans serif"
