@@ -1,7 +1,6 @@
 # EcoRoute: Carbon Tax Optimization Dashboard
 
-EcoRoute is an interactive, data-driven financial and environmental tracking dashboard built specifically for daily commuters in Mississauga, Ontario.
-I built this platform to empower users to analyze their carbon footprint, visualize route optimizations, project long-term macroeconomic cost differentials between driving and municipal transit, and receive hyper-local mobility advice powered by advanced serverless AI.
+EcoRoute is a smart tracking dashboard built for anyone tackling the daily Mississauga commute. I designed it to take the guesswork out of travel costs: it visualizes your route, calculates your carbon tax savings, and maps out a 5-year comparison between driving and taking transit. Plus, it features a built-in AI transit strategist to give you real-time, neighborhood-specific advice.
 
 ## Features
 
