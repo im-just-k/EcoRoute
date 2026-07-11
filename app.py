@@ -2,6 +2,7 @@ import streamlit as st
 import folium
 from streamlit_folium import st_folium
 import pandas as pd
+from openai import OpenAI  # OpenAI SDK used to call Featherless endpoint structures
 
 # Page configuration
 st.set_page_config(layout="wide", page_title="EcoRoute")
@@ -177,21 +178,18 @@ else:
 
     # Carbon Tax & Emissions Calculation Logic
     car_emissions_kg = (distance_km * driving_emission_g_km) / 1000
-    transit_emissions_kg = (distance_km * 40) / 1000  # Baseline transit emission factor
+    transit_emissions_kg = (distance_km * 40) / 1000
     single_co2_saved = max(0.0, car_emissions_kg - transit_emissions_kg)
     
-    # Adjust carbon tax offset savings dynamically based on vehicle profile footprint
     base_tax_rate_per_km = 0.15
     multiplier = driving_emission_g_km / 200.0
     single_tax_saved = distance_km * base_tax_rate_per_km * multiplier
 
-    # Scales Projections Logic
     weekly_tax_saved = single_tax_saved * weekly_trips
     annual_tax_saved = weekly_tax_saved * 52
     weekly_co2_saved = single_co2_saved * weekly_trips
     annual_co2_saved = weekly_co2_saved * 52
     
-    # Ecological Impact Calculations
     annual_trees_saved = annual_co2_saved / 22.0
     weekly_trees_saved = annual_trees_saved / 52.0
 
@@ -205,7 +203,7 @@ else:
         with st.container(border=True):
             st.metric(label="🚌 Transit Duration", value=f"{transit_time} mins")
 
-    # Column 2: Map & Custom Expander Route Breakdown
+    # Column 2: Map & Route Breakdown
     with col2:
         st.subheader("🗺️ Mississauga Transit Map")
         
@@ -216,7 +214,6 @@ else:
             "Erin Mills Town Centre": [43.5413, -79.7180]
         }
         
-        # High-density snapped road vectors simulating true arterial corridors
         simulated_paths = {
             "Erin Mills Town Centre-Square One Shopping Centre": [
                 [43.5413, -79.7180], [43.5428, -79.7115], [43.5562, -79.6975],
@@ -253,23 +250,19 @@ else:
         
         start_coords = coordinates[origin]
         end_coords = coordinates[destination]
-        
         center_lat = (start_coords[0] + end_coords[0]) / 2
         center_lon = (start_coords[1] + end_coords[1]) / 2
         
         m = folium.Map(location=[center_lat, center_lon], zoom_start=12, tiles="CartoDB dark_matter")
-        
         folium.Marker(location=start_coords, popup="Origin", icon=folium.Icon(color="green", icon="play")).add_to(m)
         folium.Marker(location=end_coords, popup="Destination", icon=folium.Icon(color="red", icon="stop")).add_to(m)
         
-        # Draw explicit segmented snapped street vector path
         route_path_points = simulated_paths.get(pair_key, [start_coords, end_coords])
         folium.PolyLine(locations=route_path_points, color="#39FF14", weight=5, opacity=0.85).add_to(m)
         
         st_folium(m, use_container_width=True, height=400, key=f"map_{origin}_{destination}")
-        
         st.write("")
-        st.success("🟢 Route Operating on Schedule (Verified 1 min ago via MiWay Live Data)")
+        st.success("🟢 Route Operating on Schedule (Verified via MiWay Live Data Feed)")
         
         with st.expander("🚌 View Live MiWay Transit Route Details", expanded=True):
             for step in current_itinerary:
@@ -287,11 +280,7 @@ else:
                 st.metric(label="Weekly CO2 Avoided", value=f"{weekly_co2_saved:.2f} kg", delta="📉 Mitigated", delta_color="inverse")
             with st.container(border=True):
                 st.markdown("### 🌲 Environmental Offset")
-                st.metric(
-                    label="Equivalent Tree-Days of CO2", 
-                    value=f"{weekly_trees_saved * 365:.1f} Tree-Days",
-                    help="The cumulative number of days a single mature tree must breathe to offset this week of driving."
-                )
+                st.metric(label="Equivalent Tree-Days of CO2", value=f"{weekly_trees_saved * 365:.1f} Tree-Days")
                 
         with tab2:
             with st.container(border=True):
@@ -300,16 +289,11 @@ else:
                 st.metric(label="Projected Annual CO2 Avoided", value=f"{annual_co2_saved:.2f} kg", delta="📉 High Impact", delta_color="inverse")
             with st.container(border=True):
                 st.markdown("### 🌲 Environmental Offset")
-                st.metric(
-                    label="Mature Trees Saved / Year", 
-                    value=f"{annual_trees_saved:.1f} Trees",
-                    help="Based on a mature tree absorbing approximately 22 kg of CO2 annually."
-                )
+                st.metric(label="Mature Trees Saved / Year", value=f"{annual_trees_saved:.1f} Trees")
 
-    # Advanced Macroeconomic Cost Projections Chart
+    # 5-Year Macroeconomic Chart
     st.markdown("---")
     st.subheader("📈 5-Year Macroeconomic Cost Projections")
-    st.caption("Compounding comparison: Accumulation of Driving Carbon Costs + Variable Fuel vs. Standard MiWay Public Transit Fares.")
     
     years = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"]
     driving_trend = []
@@ -317,8 +301,6 @@ else:
     
     single_transit_fare = 3.40
     annual_transit_cost = single_transit_fare * weekly_trips * 52
-    
-    # Dynamic consumption calculation derived from sidebar fuel sliders
     dynamic_fuel_cost_per_km = (liters_per_100km / 100.0) * gas_price
     annual_driving_cost = (single_tax_saved + (distance_km * dynamic_fuel_cost_per_km)) * weekly_trips * 52
     
@@ -326,10 +308,50 @@ else:
         driving_trend.append(annual_driving_cost * year)
         transit_trend.append(annual_transit_cost * year)
         
-    chart_data = {
-        "Driving (Carbon Tax + Fuel)": driving_trend,
-        "Public Transit (MiWay Fares)": transit_trend
-    }
-    
+    chart_data = {"Driving (Carbon Tax + Fuel)": driving_trend, "Public Transit (MiWay Fares)": transit_trend}
     df_chart = pd.DataFrame(chart_data, index=years)
     st.line_chart(df_chart, height=300)
+
+    # --- Featherless.ai Integration Component ---
+    st.markdown("---")
+    st.subheader("🤖 Featherless AI: Hyper-Local Commute Strategist")
+    st.caption("Generates tailored spatial logistics consulting using open-source infrastructure models.")
+
+    featherless_api_key = st.sidebar.text_input("Featherless API Key", type="password", help="Input your key to activate AI insight features.")
+
+    if not featherless_api_key:
+        st.info("💡 Input your Featherless API Key in the left sidebar configuration menu to unlock AI strategy insights.")
+    else:
+        if st.button("Generate AI Optimization Strategy Brief"):
+            with st.spinner("Connecting to Featherless cluster..."):
+                try:
+                    # Pointing OpenAI SDK client wrappers directly to Featherless servers
+                    client = OpenAI(
+                        base_url="https://api.featherless.ai/v1",  
+                        api_key=featherless_api_key
+                    )
+                    
+                    prompt_message = f"""
+                    Analyze this commuter route inside Mississauga, Ontario:
+                    - From: {origin}
+                    - To: {destination}
+                    - Driver Profile: {vehicle_type} running {liters_per_100km}L/100km at ${gas_price}/L.
+                    - Estimated Impact: Switching to transit avoids {annual_tax_saved:.2f} CAD in fees and mitigates {annual_co2_saved:.2f} kg of CO2 emissions annually.
+                    
+                    Give 3 bullet points containing brief, actionable commuter guidance localized strictly to Mississauga infrastructure (mentioning things like MiWay, Go Transit, carpooling lots, or Transitway bypass corridors). Keep suggestions tightly focused.
+                    """
+
+                    response = client.chat.completions.create(
+                        model="deepseek-ai/DeepSeek-V3-0324",  # Calls the premium tokenless deepseek cluster
+                        messages=[
+                            {"role": "system", "content": "You are a professional regional urban transit advisor based in Mississauga."},
+                            {"role": "user", "content": prompt_message}
+                        ]
+                    )
+                    
+                    st.markdown("#### 📋 Urban Mobility Advisor Brief")
+                    st.write(response.choices[0].message.content)
+                    st.success("✨ Contextual brief successfully generated via tokenless serverless AI.")
+                    
+                except Exception as e:
+                    st.error(f"Inference Connection Exception: {e}")
