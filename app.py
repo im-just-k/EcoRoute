@@ -50,8 +50,37 @@ else:
 
     with col2:
         st.subheader("🗺️ Mississauga Transit Map")
-        st.info(f"Visualizing route from {origin.split(' (')[0]} ➔ {destination.split(' (')[0]}...")
-        # Map will render right here
+        
+        # 📌 Coordinates dictionary for our hubs
+        coordinates = {
+            "UTM (University of Toronto Mississauga)": [43.5479, -79.6612],
+            "Square One Shopping Centre": [43.5931, -79.6425],
+            "Port Credit GO": [43.5557, -79.5869],
+            "Erin Mills Town Centre": [43.5413, -79.7180]
+        }
+        
+        # Pull coordinates for our selected endpoints
+        start_coords = coordinates[origin]
+        end_coords = coordinates[destination]
+        
+        # Initialize an interactive map centered right between your two points
+        import folium
+        from streamlit_folium import st_folium
+        
+        center_lat = (start_coords[0] + end_coords[0]) / 2
+        center_lon = (start_coords[1] + end_coords[1]) / 2
+        
+        m = folium.Map(location=[center_lat, center_lon], zoom_start=12, tiles="CartoDB dark_matter")
+        
+        # Add markers for Origin and Destination
+        folium.Marker(location=start_coords, popup=f"Origin: {origin}", icon=folium.Icon(color="green", icon="play")).add_to(m)
+        folium.Marker(location=end_coords, popup=f"Destination: {destination}", icon=folium.Icon(color="red", icon="stop")).add_to(m)
+        
+        # Draw a straight connecting route line for visualization
+        folium.PolyLine(locations=[start_coords, end_coords], color="#39FF14", weight=4, opacity=0.8).add_to(m)
+        
+        # Render the map into Streamlit!
+        st_folium(m, width=None, height=450, key=f"map_{origin}_{destination}")
 
     with col3:
         st.subheader("💰 Optimization Wallet")
