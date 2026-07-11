@@ -279,7 +279,7 @@ else:
             with st.container(border=True):
                 st.markdown("### 🌲 Environmental Offset")
                 st.metric(
-                    label="Equivalent Tree-Days of CO2", 
+                    label="Equivalent Tree-Days of CO2",
                     value=f"{weekly_trees_saved * 365:.1f} Tree-Days",
                     help="The cumulative number of days a single mature tree must breathe to offset this week of driving."
                 )
