@@ -40,23 +40,32 @@ vehicle_type = st.sidebar.selectbox(
     ["Standard Sedan", "SUV / Light Truck", "Hybrid Vehicle", "Electric Vehicle (EV)"]
 )
 
+# Robust structural mapping to insulate lookups from hidden string/encoding anomalies
+vehicle_mapping = {
+    "Standard Sedan": "sedan",
+    "SUV / Light Truck": "suv",
+    "Hybrid Vehicle": "hybrid",
+    "Electric Vehicle (EV)": "ev"
+}
+internal_key = vehicle_mapping.get(vehicle_type, "sedan")
+
 # Dynamic Emission Factors (g CO2 per km) mapping
 emission_factors = {
-    "Standard Sedan": 200,
-    "SUV / Light Truck": 280,
-    "Hybrid Vehicle": 110,
-    "Electric Vehicle (EV)": 0
+    "sedan": 200,
+    "suv": 280,
+    "hybrid": 110,
+    "ev": 0
 }
-driving_emission_g_km = emission_factors[vehicle_type]
+driving_emission_g_km = emission_factors[internal_key]
 
 # Dynamic Fuel Consumption Factors (Liters per 100km approximation)
 fuel_factors = {
-    "Standard Sedan": 8.0,
-    "SUV / Light Truck": 11.5,
-    "Hybrid Vehicle": 4.5,
-    "Electric Vehicle (EV)": 0.0
+    "sedan": 8.0,
+    "suv": 11.5,
+    "hybrid": 4.5,
+    "ev": 0.0
 }
-liters_per_100km = fuel_factors[vehicle_type]
+liters_per_100km = fuel_factors[internal_key]
 
 st.sidebar.markdown("---")
 st.sidebar.title("🔮 Projections Parameters")
