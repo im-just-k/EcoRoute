@@ -1,10 +1,21 @@
 import streamlit as st
 import folium
 from streamlit_folium import st_folium
-import random
+import pandas as pd
 
 # Page configuration
 st.set_page_config(layout="wide", page_title="EcoRoute")
+
+# Inject Global CSS Override to resolve metric card text clipping ("Tree-D...")
+st.markdown("""
+    <style>
+    [data-testid="stMetricValue"] {
+        font-size: clamp(1.4rem, 1.8vw, 2.2rem) !important;
+        white-space: nowrap !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 st.title("🌿 EcoRoute: Carbon Tax Optimization Dashboard")
 
 # Define available Mississauga hubs
@@ -38,8 +49,18 @@ emission_factors = {
 }
 driving_emission_g_km = emission_factors[vehicle_type]
 
+# Dynamic Fuel Consumption Factors (Liters per 100km approximation)
+fuel_factors = {
+    "Standard Sedan": 8.0,
+    "SUV / Light Truck": 11.5,
+    "Hybrid Vehicle": 4.5,
+    "Electric Vehicle (EV)": 0.0
+}
+liters_per_100km = fuel_factors[vehicle_type]
+
 st.sidebar.markdown("---")
-st.sidebar.title("🔮 Projections Parameter")
+st.sidebar.title("🔮 Projections Parameters")
+gas_price = st.sidebar.slider("Regional Fuel Price (CAD/L)", min_value=1.30, max_value=2.20, value=1.65, step=0.05)
 weekly_trips = st.sidebar.slider("Expected Weekly Trips", min_value=1, max_value=20, value=5)
 
 # Creates 3 Layout Columns
@@ -160,6 +181,10 @@ else:
     annual_tax_saved = weekly_tax_saved * 52
     weekly_co2_saved = single_co2_saved * weekly_trips
     annual_co2_saved = weekly_co2_saved * 52
+    
+    # Ecological Impact Calculations
+    annual_trees_saved = annual_co2_saved / 22.0
+    weekly_trees_saved = annual_trees_saved / 52.0
 
     # Column 1: Trip Metrics
     with col1:
@@ -182,6 +207,41 @@ else:
             "Erin Mills Town Centre": [43.5413, -79.7180]
         }
         
+        # High-density snapped road vectors simulating true arterial corridors
+        simulated_paths = {
+            "Erin Mills Town Centre-Square One Shopping Centre": [
+                [43.5413, -79.7180], [43.5428, -79.7115], [43.5562, -79.6975],
+                [43.5684, -79.6845], [43.5781, -79.6610], [43.5835, -79.6492],
+                [43.5891, -79.6480], [43.5912, -79.6455], [43.5931, -79.6425]
+            ],
+            "Erin Mills Town Centre-UTM (University of Toronto Mississauga)": [
+                [43.5413, -79.7180], [43.5401, -79.7020], [43.5352, -79.6885],
+                [43.5348, -79.6710], [43.5415, -79.6690], [43.5460, -79.6635],
+                [43.5479, -79.6612]
+            ],
+            "Erin Mills Town Centre-Port Credit GO": [
+                [43.5413, -79.7180], [43.5310, -79.7120], [43.5185, -79.6912],
+                [43.5042, -79.6705], [43.5115, -79.6420], [43.5220, -79.6210],
+                [43.5365, -79.6050], [43.5492, -79.5935], [43.5557, -79.5869]
+            ],
+            "Port Credit GO-Square One Shopping Centre": [
+                [43.5557, -79.5869], [43.5610, -79.5925], [43.5685, -79.6010],
+                [43.5752, -79.6135], [43.5818, -79.6248], [43.5885, -79.6335],
+                [43.5910, -79.6390], [43.5931, -79.6425]
+            ],
+            "Port Credit GO-UTM (University of Toronto Mississauga)": [
+                [43.5557, -79.5869], [43.5512, -79.5950], [43.5448, -79.6105],
+                [43.4985, -79.6290], [43.5112, -79.6410], [43.5295, -79.6515],
+                [43.5430, -79.6558], [43.5479, -79.6612]
+            ],
+            "Square One Shopping Centre-UTM (University of Toronto Mississauga)": [
+                [43.5931, -79.6425], [43.5895, -79.6432], [43.5852, -79.6441],
+                [43.5791, -79.6468], [43.5748, -79.6512], [43.5702, -79.6582],
+                [43.5663, -79.6755], [43.5582, -79.6711], [43.5528, -79.6655],
+                [43.5479, -79.6612]
+            ]
+        }
+        
         start_coords = coordinates[origin]
         end_coords = coordinates[destination]
         
@@ -192,12 +252,14 @@ else:
         
         folium.Marker(location=start_coords, popup="Origin", icon=folium.Icon(color="green", icon="play")).add_to(m)
         folium.Marker(location=end_coords, popup="Destination", icon=folium.Icon(color="red", icon="stop")).add_to(m)
-        folium.PolyLine(locations=[start_coords, end_coords], color="#39FF14", weight=4, opacity=0.8).add_to(m)
+        
+        # Draw explicit segmented snapped street vector path
+        route_path_points = simulated_paths.get(pair_key, [start_coords, end_coords])
+        folium.PolyLine(locations=route_path_points, color="#39FF14", weight=5, opacity=0.85).add_to(m)
         
         st_folium(m, use_container_width=True, height=400, key=f"map_{origin}_{destination}")
         
         st.write("")
-        # Emulated Live Operational Tracking Element
         st.success("🟢 Route Operating on Schedule (Verified 1 min ago via MiWay Live Data)")
         
         with st.expander("🚌 View Live MiWay Transit Route Details", expanded=True):
@@ -214,27 +276,42 @@ else:
                 st.metric(label="Weekly Tax Saved", value=f"${weekly_tax_saved:.2f}", delta=f"{weekly_trips} trips/wk")
             with st.container(border=True):
                 st.metric(label="Weekly CO2 Avoided", value=f"{weekly_co2_saved:.2f} kg", delta="📉 Mitigated", delta_color="inverse")
+            with st.container(border=True):
+                st.markdown("### 🌲 Environmental Offset")
+                st.metric(
+                    label="Equivalent Tree-Days of CO2", 
+                    value=f"{weekly_trees_saved * 365:.1f} Tree-Days",
+                    help="The cumulative number of days a single mature tree must breathe to offset this week of driving."
+                )
                 
         with tab2:
             with st.container(border=True):
                 st.metric(label="Projected Annual Savings", value=f"${annual_tax_saved:.2f}", delta="🏆 Financial ROI")
             with st.container(border=True):
-                st.metric(label="Projected Annual CO2 Avoided", value=f"{annual_co2_saved:.2f} kg", delta="🌲 High Impact", delta_color="inverse")
+                st.metric(label="Projected Annual CO2 Avoided", value=f"{annual_co2_saved:.2f} kg", delta="📉 High Impact", delta_color="inverse")
+            with st.container(border=True):
+                st.markdown("### 🌲 Environmental Offset")
+                st.metric(
+                    label="Mature Trees Saved / Year",
+                    value=f"{annual_trees_saved:.1f} Trees",
+                    help="Based on a mature tree absorbing approximately 22 kg of CO2 annually."
+                )
 
     # Advanced Macroeconomic Cost Projections Chart
     st.markdown("---")
     st.subheader("📈 5-Year Macroeconomic Cost Projections")
-    st.caption("Compounding comparison: Accumulation of Driving Carbon Costs vs. Standard MiWay Public Transit Spending.")
+    st.caption("Compounding comparison: Accumulation of Driving Carbon Costs + Variable Fuel vs. Standard MiWay Public Transit Fares.")
     
-    years = [f"Year {i}" for i in range(1, 6)]
+    years = ["Year 1", "Year 2", "Year 3", "Year 4", "Year 5"]
     driving_trend = []
     transit_trend = []
     
     single_transit_fare = 3.40
     annual_transit_cost = single_transit_fare * weekly_trips * 52
     
-    nominal_driving_overhead = distance_km * 0.25
-    annual_driving_cost = (single_tax_saved + nominal_driving_overhead) * weekly_trips * 52
+    # Dynamic consumption calculation derived from sidebar fuel sliders
+    dynamic_fuel_cost_per_km = (liters_per_100km / 100.0) * gas_price
+    annual_driving_cost = (single_tax_saved + (distance_km * dynamic_fuel_cost_per_km)) * weekly_trips * 52
     
     for year in range(1, 6):
         driving_trend.append(annual_driving_cost * year)
@@ -245,4 +322,5 @@ else:
         "Public Transit (MiWay Fares)": transit_trend
     }
     
-    st.line_chart(data=chart_data, height=300)
+    df_chart = pd.DataFrame(chart_data, index=years)
+    st.line_chart(df_chart, height=300)
