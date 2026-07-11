@@ -285,7 +285,12 @@ else:
                 st.metric(label="Weekly CO2 Avoided", value=f"{weekly_co2_saved:.2f} kg", delta="📉 Mitigated", delta_color="inverse")
             with st.container(border=True):
                 st.markdown("### 🌲 Environmental Offset")
-                st.metric(label="Equivalent Tree-Days of CO2", value=f"{weekly_trees_saved * 365:.1f} Tree-Days")
+                # Add the help parameter here:
+                st.metric(
+                    label="Equivalent Tree-Days of CO2", 
+                    value=f"{weekly_trees_saved * 365:.1f} Tree-Days",
+                    help="A 'Tree-Day' represents the environmental impact offset equivalent to one mature tree absorbing CO2 for a full 24-hour period (approx. 60g/day)."
+                )
                 
         with tab2:
             with st.container(border=True):
@@ -294,7 +299,12 @@ else:
                 st.metric(label="Projected Annual CO2 Avoided", value=f"{annual_co2_saved:.2f} kg", delta="📉 High Impact", delta_color="inverse")
             with st.container(border=True):
                 st.markdown("### 🌲 Environmental Offset")
-                st.metric(label="Mature Trees Saved / Year", value=f"{annual_trees_saved:.1f} Trees")
+                # Add the help parameter here:
+                st.metric(
+                    label="Mature Trees Saved / Year", 
+                    value=f"{annual_trees_saved:.1f} Trees",
+                    help="Calculated based on the standard environmental benchmark that a mature tree absorbs roughly 22 kg of CO2 per year."
+                )
 
     # 5-Year Macroeconomic Chart
     st.markdown("---")
