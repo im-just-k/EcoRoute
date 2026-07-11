@@ -3,6 +3,11 @@ import folium
 from streamlit_folium import st_folium
 import pandas as pd
 from openai import OpenAI  # OpenAI SDK used to call Featherless endpoint structures
+import os                  # Added to interface with system environment memory
+from dotenv import load_dotenv  # Added to load local hidden configuration files
+
+# Automatically loads the parameters defined in your hidden .env file into memory
+load_dotenv()
 
 # Page configuration
 st.set_page_config(layout="wide", page_title="EcoRoute")
@@ -317,15 +322,15 @@ else:
     st.subheader("🤖 Featherless AI: Hyper-Local Commute Strategist")
     st.caption("Generates tailored spatial logistics consulting using open-source infrastructure models.")
 
-    featherless_api_key = st.sidebar.text_input("Featherless API Key", type="password", help="Input your key to activate AI insight features.")
+    # Securely fetch the API token implicitly from system environment storage
+    featherless_api_key = os.getenv("FEATHERLESS_API_KEY")
 
     if not featherless_api_key:
-        st.info("💡 Input your Featherless API Key in the left sidebar configuration menu to unlock AI strategy insights.")
+        st.error("❌ Configuration Error: 'FEATHERLESS_API_KEY' was not found in your local .env file.")
     else:
         if st.button("Generate AI Optimization Strategy Brief"):
             with st.spinner("Connecting to Featherless cluster..."):
                 try:
-                    # Pointing OpenAI SDK client wrappers directly to Featherless servers
                     client = OpenAI(
                         base_url="https://api.featherless.ai/v1",  
                         api_key=featherless_api_key
@@ -342,7 +347,7 @@ else:
                     """
 
                     response = client.chat.completions.create(
-                        model="deepseek-ai/DeepSeek-V3-0324",  # Calls the premium tokenless deepseek cluster
+                        model="deepseek-ai/DeepSeek-V3-0324",  # Calls premium deepseek tokenless cluster
                         messages=[
                             {"role": "system", "content": "You are a professional regional urban transit advisor based in Mississauga."},
                             {"role": "user", "content": prompt_message}
