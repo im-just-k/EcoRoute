@@ -22,19 +22,34 @@ EcoRoute is a smart tracking dashboard built for anyone tackling the daily Missi
 ---
 
 ## Calculations
+
 * **Carbon Tax Savings Formula**
 
-Driving costs scale directly with a vehicle's baseline efficiency. The system calculates single-trip tax penalties using a custom emissions multiplier:
+Rather than reproducing the exact federal fuel charge calculation, EcoRoute uses a simplified estimation model designed to compare the relative cost of driving versus public transit. The model combines estimated travel distance with a vehicle's emissions profile to approximate the carbon tax burden associated with a single trip.
 
 $$Single\ Trip\ Tax\ Saved = Distance\ (km) \times 0.15 \times \left(\frac{Vehicle\ Emission\ Factor\ (g/km)}{200.0}\right)$$
 
+Where:
+
+* **0.15** represents a baseline approximation of the federal carbon tax embedded in gasoline pricing for a typical passenger vehicle.
+* **200 g/km** serves as the normalization baseline, reflecting the emissions profile of an average light-duty passenger vehicle.
+* **Vehicle Emission Factor** is selected from the dashboard's vehicle profile and scales the estimated tax burden relative to that baseline.
+
+This model is intended for comparative trip analysis and visualization rather than official tax accounting.
+
 * **Environmental Mitigation Modeling**
 
-To compute the mass of greenhouse gases prevented by choosing public transit over a personal vehicle, the dashboard measures the delta against a baseline passenger transit footprint:
+To compute the mass of greenhouse gases prevented by choosing public transit over a personal vehicle, the dashboard measures the difference between the selected vehicle's emissions profile and an average per-passenger municipal transit footprint.
 
 $$Weekly\ CO_2\ Avoided\ (kg) = \frac{\left(Vehicle\ Emission\ Factor - Transit\ Factor\right) \times Distance \times Weekly\ Trips}{1000}$$
 
----
+Where:
+
+* **Transit Factor** defaults to approximately **40 g CO₂/passenger-km**, representing the average emissions footprint of an occupied municipal transit vehicle.
+* The result is converted from grams to kilograms for reporting throughout the dashboard.
+
+The dashboard also converts annual carbon savings into **Tree-Days**, representing the amount of carbon dioxide a mature tree would absorb in one day. This conversion assumes a mature tree sequesters approximately **22 kg of CO₂ per year**, providing a more intuitive way to visualize environmental impact.
+
 
 ## Project Structure
 
