@@ -332,7 +332,7 @@ else:
             with st.spinner("Connecting to Featherless cluster..."):
                 try:
                     client = OpenAI(
-                        base_url="https://api.featherless.ai/v1",  
+                        base_url="https://api.featherless.ai/v1",
                         api_key=featherless_api_key
                     )
                     
