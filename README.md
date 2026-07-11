@@ -21,6 +21,21 @@ EcoRoute is a smart tracking dashboard built for anyone tackling the daily Missi
 
 ---
 
+## Calculations
+* **Carbon Tax Savings Formula**
+
+Driving costs scale directly with a vehicle's baseline efficiency. The system calculates single-trip tax penalties using a custom emissions multiplier:
+
+$$Single\ Trip\ Tax\ Saved = Distance\ (km) \times 0.15 \times \left(\frac{Vehicle\ Emission\ Factor\ (g/km)}{200.0}\right)$$
+
+* **Environmental Mitigation Modeling**
+
+To compute the mass of greenhouse gases prevented by choosing public transit over a personal vehicle, the dashboard measures the delta against a baseline passenger transit footprint:
+
+$$Weekly\ CO_2\ Avoided\ (kg) = \frac{\left(Vehicle\ Emission\ Factor - Transit\ Factor\right) \times Distance \times Weekly\ Trips}{1000}$$
+
+---
+
 ## Project Structure
 
 ```text
